@@ -1,0 +1,45 @@
+type Auth @key(fields: "_id") {
+  _id: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
+  accessToken: String
+  refreshToken: String
+  userId: ID
+  email: String
+}
+
+input CreateAuthInput {
+  accessToken: String!
+  refreshToken: String!
+  userId: ID!
+  email: String!
+}
+
+input UpdateAuthInput {
+  _id: ID!
+  accessToken: String
+  refreshToken: String
+  userId: ID
+  email: String
+}
+
+extend type Query {
+  getAuthById(_id: ID!): Auth
+    @isMHAdmin
+    @cacheSet(type: "getAuthById", identifier: "_id")
+  userLogin(email: String, password: String): Auth @isMHAdmin
+  getCurrentUser(_id): User @isMHAdmin
+}
+
+extend type Mutation {
+  createAuth(data: CreateAuthInput!): Auth!
+    @isMHAdmin
+    @cachePurge(payloads: [{ types: ["getAuth", "getAllAuths"] }])
+  deleteAuth(_id: ID!): Auth!
+    @isMHAdmin
+    @cachePurge(
+      payloads: [
+        { types: ["getAuth", "getAllAuths", "getAuthById"], identifier: "_id" }
+      ]
+    )
+}
